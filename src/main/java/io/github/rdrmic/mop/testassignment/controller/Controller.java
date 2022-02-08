@@ -27,7 +27,7 @@ public class Controller {
 	@Autowired
 	private Environment environment;
 	
-	@GetMapping(value ="execute")
+	@GetMapping(value ="data")
 	private Flux<?> execute() {
 		if ("mock".equals(environment.getActiveProfiles()[0])) {
 			MockDataController.reset();
