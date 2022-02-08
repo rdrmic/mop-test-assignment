@@ -31,7 +31,7 @@ public class WebClientProvider {
 	private final Scheduler scheduler;
 	private final String baseUrl;
 	
-	private WebClientProvider(@Value("${externData.url.base}") final String dataFetchBaseUrl) throws SSLException {
+	private WebClientProvider(@Value("${data.url.base}") final String dataFetchBaseUrl) throws SSLException {
 		SslContext sslContext = SslContextBuilder
 	            .forClient()
 	            .trustManager(InsecureTrustManagerFactory.INSTANCE)

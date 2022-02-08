@@ -1,22 +1,12 @@
 {"properties": [
   {
-    "name": "log.webclient",
+    "name": "data.url.base",
     "type": "java.lang.String",
-    "description": "A description for 'log.webclient'"
+    "description": "A description for 'data.url.base'"
   },
   {
-    "name": "log.r2dbc",
+    "name": "data.url.sufix",
     "type": "java.lang.String",
-    "description": "A description for 'log.r2dbc'"
-  },
-  {
-    "name": "externData.url.sufix",
-    "type": "java.lang.String",
-    "description": "A description for 'externData.url.sufix'"
-  },
-  {
-    "name": "externData.url.base",
-    "type": "java.lang.String",
-    "description": "A description for 'externData.url.base'"
+    "description": "A description for 'data.url.sufix'"
   }
 ]}

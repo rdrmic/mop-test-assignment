@@ -42,7 +42,7 @@ public class PayloadService {
 	@Autowired
 	private DbAccess dbAccess;
 	
-	@Value("${externData.url.sufix}")
+	@Value("${data.url.sufix}")
 	private String dataFetchUrlSufix;
 
 	@Value("${log.webclient}")
