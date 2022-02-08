@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	
+	<groupId>io.github.rdrmic</groupId>
+	<artifactId>mop-test-assignment</artifactId>
+	<version>0.0.1</version>
+	<packaging>${project.packaging}</packaging>
+	<name>mop-test-assignment</name>
+	<description>Test assignment for MoP</description>
+	
+	<parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.6.3</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+    
+	<properties>
+		<java.version>11</java.version>
+	</properties>
+	
+	<dependencies>
+		<dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webflux</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-r2dbc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <scope>runtime</scope>
+            <optional>true</optional>
+        </dependency>
+
+		<dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>r2dbc-postgresql</artifactId>
+            <version>0.9.0.M1</version>
+        </dependency>
+        <dependency>
+		    <groupId>io.r2dbc</groupId>
+		    <artifactId>r2dbc-spi</artifactId>
+		    <version>0.9.0.M1</version><!--$NO-MVN-MAN-VER$-->
+		</dependency>
+        <dependency>
+		    <groupId>io.r2dbc</groupId>
+		    <artifactId>r2dbc-h2</artifactId>
+        </dependency>
+	</dependencies>
+	
+	<dependencyManagement>
+        <dependencies>
+            <dependency>
+	           <groupId>io.r2dbc</groupId>
+	           <artifactId>r2dbc-bom</artifactId>
+	           <version>Arabba-SR12</version>
+	           <type>pom</type>
+	           <scope>import</scope>
+	       </dependency>
+        </dependencies>
+    </dependencyManagement>
+	
+	<profiles>
+        <profile>
+            <id>dev</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <project.packaging>jar</project.packaging>
+                <spring.profiles.active>dev</spring.profiles.active>
+            </properties>
+        </profile>
+        <profile>
+            <id>mock</id>
+            <properties>
+                <project.packaging>jar</project.packaging>
+                <spring.profiles.active>mock</spring.profiles.active>
+            </properties>
+        </profile>
+    </profiles>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
+		<resources>
+	        <resource>
+	            <directory>src/main/resources</directory>
+	            <filtering>true</filtering>
+	        </resource>
+	    </resources>
+	</build>
+
+</project>
