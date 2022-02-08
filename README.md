@@ -19,4 +19,4 @@ There are 2 switches (on/off) in *application.properties* that toggle *WebFlux's
 They are initialy off, but they could be switched on to see more clearly what is happening regarding threads, asynchronicity and non-blocking nature of the implementation.
 
 # Error handling and transaction management
-Besides HTTP 408 status, I didn't handled other eventual exceptions or HTTP statuses different than 200. So it CAN happen that some of the request execution times get persisted in those cases, but it can be fixed quickly.
+Besides HTTP 408 status, I didn't handled other eventual exceptions or HTTP statuses different than 200. So it CAN happen that some of the request execution times get persisted in those cases, but that can be fixed quickly.
