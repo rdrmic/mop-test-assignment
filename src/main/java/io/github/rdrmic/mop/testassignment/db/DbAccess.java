@@ -9,14 +9,14 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.r2dbc.core.DatabaseClient;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
 import io.github.rdrmic.mop.testassignment.model.ProductAndPrice;
 import io.github.rdrmic.mop.testassignment.model.RequestExecutionTime;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-@Component
+@Repository
 public class DbAccess {
 	
 	@Autowired
