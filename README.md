@@ -17,6 +17,3 @@ Default profile fetches data from endpoints listed in the specification.
 # Console logging
 There are 2 switches (on/off) in *application.properties* that toggle *WebFlux's* internal logging: 'log.webclient' and 'log.r2dbc'.
 They are initialy off, but they could be switched on to see more clearly what is happening regarding threads, asynchronicity and non-blocking nature of the implementation.
-
-# Error handling and transaction management
-Besides HTTP 408 status, I didn't handled other eventual exceptions or HTTP statuses different than 200. So it CAN happen that some of the request execution times get persisted in those cases, but that can be fixed quickly.
