@@ -1,4 +1,5 @@
 HELP.md
+bin/
 target/
 #!.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
@@ -53,4 +54,3 @@ build/
 
 ### Mobile Tools for Java (J2ME) ###
 .mtj.tmp/
-/bin/
