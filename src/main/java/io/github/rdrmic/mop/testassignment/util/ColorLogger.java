@@ -19,7 +19,7 @@ public class ColorLogger {
 	}
 	
 	private void toLogger(String colorCode, Object obj) {
-		logger.debug("{}{}{}", colorCode, obj, CODE_RESET);
+		logger.info("{}{}{}", colorCode, obj, CODE_RESET);
 	}
 	
 	// DEBUG

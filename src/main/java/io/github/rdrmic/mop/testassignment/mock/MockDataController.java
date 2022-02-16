@@ -33,7 +33,7 @@ public class MockDataController {
 	private ResponseEntity<String> mockData1() throws SQLException {
 		if (SIMULATE_DELAYS_AND_ERRORS) {
 			try {
-				Thread.sleep(250);
+				Thread.sleep(3004);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -46,7 +46,7 @@ public class MockDataController {
 		ResponseEntity<String> response;
 		if (SIMULATE_DELAYS_AND_ERRORS) {
 			try {
-				Thread.sleep(500);
+				Thread.sleep(3003);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -66,7 +66,7 @@ public class MockDataController {
 	private ResponseEntity<String> mockData3() throws SQLException {
 		if (SIMULATE_DELAYS_AND_ERRORS) {
 			try {
-				Thread.sleep(750);
+				Thread.sleep(3002);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -79,7 +79,7 @@ public class MockDataController {
 		ResponseEntity<String> response;
 		if (SIMULATE_DELAYS_AND_ERRORS) {
 			try {
-				Thread.sleep(1000);
+				Thread.sleep(3001);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}

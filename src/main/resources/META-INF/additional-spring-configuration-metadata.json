@@ -10,9 +10,9 @@
     "description": "A description for 'data.url.sufix'"
   },
   {
-    "name": "log.webclient",
+    "name": "log.reactor",
     "type": "java.lang.String",
-    "description": "A description for 'log.webclient'"
+    "description": "A description for 'log.reactor'"
   },
   {
     "name": "log.r2dbc",
