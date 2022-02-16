@@ -27,13 +27,13 @@ public class Controller {
 	@Autowired
 	private Environment environment;
 	
-	@GetMapping(value ="data")
+	@GetMapping("data")
 	private Flux<?> execute() {
 		if ("mock".equals(environment.getActiveProfiles()[0])) {
 			MockDataController.reset();
 		}
 
-		LOG.info("STARTING execute() ...");
+		LOG.spec("STARTING ...");
 		return payloadService.execute();
 	}
 	

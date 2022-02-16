@@ -4,9 +4,9 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import org.reactivestreams.Subscription;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -23,7 +23,6 @@ import io.github.rdrmic.mop.testassignment.util.ColorLogger;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Timed;
-import reactor.core.scheduler.Schedulers;
 import reactor.util.retry.Retry;
 
 @Service
@@ -45,107 +44,87 @@ public class PayloadService {
 	@Value("${data.url.sufix}")
 	private String dataFetchUrlSufix;
 
-	@Value("${log.webclient}")
-	private String logWebClient;
-	
-	private volatile int numCompletedFetches;
-	
-	private Subscription[] fetchDataSubscriptions = new Subscription[4];
-	
-	private Flux<Void> persistToDbHandle;
-	
+	@Value("${log.reactor}")
+	private String logReactor;
+
 	public Flux<?> execute() {
-		Flux<Void> emptyTempTableHandle = emptyTempTable();
-		Mono<Void> fetchDataHandle = fetchExternData();
-		Flux<Map<Object, Object>> getResultHandle = dbAccess.fetchProductPrices();
+		Flux<Void> emptyTempTable = emptyTempTable();
+		Mono<Void> fetchData = fetchExternData();
+		Flux<Map<Object, Object>> getResult = dbAccess.fetchProductPrices();
 		
 		Mono<Void> allDoneLogger = Mono.fromCallable(() -> {
-			LOG.spec("ALL DONE!");
+			LOG.info("ALL DONE!\n");
 			return null;
 		});
 		
-		return Flux.concat(emptyTempTableHandle, fetchDataHandle, getResultHandle, allDoneLogger);
+		return Flux.concat(emptyTempTable, fetchData, getResult, allDoneLogger);
 	}
 	
 	private Flux<Void> emptyTempTable() {
 		Mono<Void> handle = dbAccess.emptyTempTable();
 		Mono<Void> handleLogger = Mono.fromCallable(() -> {
-			LOG.spec("TEMP TABLE EMPTIED");
+			LOG.info("TEMP TABLE EMPTIED");
 			return null;
 		});
 		return handle.concatWith(handleLogger);
 	}
 	
-	private Mono<Void> fetchExternData() {
-		numCompletedFetches = 0;
-		persistToDbHandle = Flux.empty();
+	public Mono<Void> fetchExternData() {
+		AtomicInteger repliesCounter = new AtomicInteger();
 		
-		var handle = Flux.empty();
+		Flux<Object> handle = Flux.empty();
 		for (int i = 1; i <= 4; i++) {
-			handle = handle.mergeWith(createExternDataHandle(i));
+			handle = handle.mergeWith(createExternDataHandle(i, repliesCounter));
 		}
-		handle = handle
-				.take(3, true)
-				.doOnComplete(() -> {
-					LOG.spec("FETCHING DATA COMPLETED");
-					
-					Mono<Void> blockingWrapper = Mono
-							.fromCallable(() -> {
-								return persistToDbHandle.log().blockLast();
-							})
-							.subscribeOn(Schedulers.newBoundedElastic(1, Integer.MAX_VALUE, "db-handle"));
-					if ("on".equals(logWebClient)) {
-						blockingWrapper = blockingWrapper.log("fetchExternData");
-					}
-					blockingWrapper.block();
-					LOG.spec("PERSISTED ALL TO DB");
-				});
-		if ("on".equals(logWebClient)) {
+		handle = handle.take(3).doOnComplete(() -> LOG.info("DATA FETCHED AND PERSISTED"));
+		if ("on".equals(logReactor)) {
 			handle = handle.log("fetchExternData");
 		}
 		return handle.then();
 	}
-	
-	private Mono<Timed<List<ProductAndPriceDto>>> createExternDataHandle(int urlSufixNum) {
+	private Mono<Void> createExternDataHandle(int urlSufixNum, AtomicInteger repliesCounter) {
 		var handle = webClientProvider.getWebClient().get()
 				.uri(String.format("/%s%d", dataFetchUrlSufix, urlSufixNum))
 				.accept(MediaType.APPLICATION_JSON)
 				.retrieve()
 				.bodyToMono(new ParameterizedTypeReference<List<ProductAndPriceDto>>() {})
 				.publishOn(webClientProvider.getScheduler())
+				.timed()
 				.retryWhen(
-						Retry.backoff(5, Duration.ofSeconds(1))
+						Retry.backoff(10, Duration.ofSeconds(1))
 						.filter(throwable -> {
 							LOG.emph(throwable);
-							return ((WebClientResponseException) throwable).getStatusCode().equals(HttpStatus.REQUEST_TIMEOUT);
+							boolean isLessThanThreeReplies = repliesCounter.get() < 3;
+							boolean isRequestTimeout = ((WebClientResponseException) throwable).getStatusCode().equals(HttpStatus.REQUEST_TIMEOUT);
+							return isLessThanThreeReplies && isRequestTimeout;
 						})
 				)
-				.timed()
-				.doOnSubscribe(s -> fetchDataSubscriptions[urlSufixNum - 1] = s)
-				.doOnSuccess(timedPayload -> {
-					numCompletedFetches++;
-					String url = String.join("/", webClientProvider.getBaseUrl(), dataFetchUrlSufix, String.valueOf(urlSufixNum));
-					if (numCompletedFetches <= 3) {
-						LOG.debug("fetched data from '%s', sending data and response-time to DB ...", url);
-						persistToDbHandle = persistToDbHandle.mergeWith(sendDataToDb(url, timedPayload));
-					} else {
-						LOG.emph("canceling subscription for '%s'", url);
-						fetchDataSubscriptions[urlSufixNum - 1].cancel();
+				.onErrorResume(err -> repliesCounter.get() >= 3, err -> Mono.empty())
+				.flatMap(timedPayload -> {
+					if (repliesCounter.incrementAndGet() <= 3) {
+						String url = String.join("/", webClientProvider.getBaseUrl(), dataFetchUrlSufix, String.valueOf(urlSufixNum));
+						return sendDataToDb(url, timedPayload);
 					}
+					return Mono.empty();
 				});
-		if ("on".equals(logWebClient)) {
+		if ("on".equals(logReactor)) {
 			handle = handle.log("fetchExternData_" + urlSufixNum);
 		}
 		return handle;
 	}
 	
-	private Flux<Void> sendDataToDb(String url, Timed<List<ProductAndPriceDto>> timedPayload) {
+	private Mono<Void> sendDataToDb(String url, Timed<List<ProductAndPriceDto>> timedPayload) {
 		Flux<Void> savePayloadHandles = sendPayloadToDb(timedPayload.get());
 		
 		long elapsedInMillis = timedPayload.elapsed().toMillis();
 		Mono<Void> saveRequestExecutionTimeHandle = sendRequestExecutionTimeToDb(url, elapsedInMillis);
 		
-		return savePayloadHandles.mergeWith(saveRequestExecutionTimeHandle);
+		Flux<Void> sendToDbHandles = Flux.merge(savePayloadHandles, saveRequestExecutionTimeHandle);
+		if ("on".equals(logReactor)) {
+			sendToDbHandles = sendToDbHandles.log("sendToDbHandles");
+		}
+		return sendToDbHandles.then();
+				
 	}
 	
 	private Flux<Void> sendPayloadToDb(List<ProductAndPriceDto> payload) {
@@ -168,7 +147,7 @@ public class PayloadService {
 	
 	private Mono<Void> sendRequestExecutionTimeToDb(String url, long time) {
 		var handle = requestExecutionTimeService.sendRequestExecutionTimeToDb(url, time);
-		if ("on".equals(logWebClient)) {
+		if ("on".equals(logReactor)) {
 			handle = handle.log("sendRequestExecutionTimeToDb");
 		}
 		return handle;

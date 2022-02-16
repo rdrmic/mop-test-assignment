@@ -61,9 +61,9 @@ public class DbAccess {
             }
             return Flux.from(statement.execute()).flatMap(result -> result.getRowsUpdated());
 		});
-		if ("on".equals(logR2dbc)) {
+		/*if ("on".equals(logR2dbc)) {		//too many log entries
 			handle = handle.log("batchSaveProductAndPrice");
-		}
+		}*/
 		return handle.then();
 	}
 	
