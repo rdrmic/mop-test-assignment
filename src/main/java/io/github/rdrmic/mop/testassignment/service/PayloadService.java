@@ -69,7 +69,7 @@ public class PayloadService {
 		return handle.concatWith(handleLogger);
 	}
 	
-	public Mono<Void> fetchExternData() {
+	private Mono<Void> fetchExternData() {
 		AtomicInteger repliesCounter = new AtomicInteger();
 		
 		Flux<Object> handle = Flux.empty();

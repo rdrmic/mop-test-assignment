@@ -66,7 +66,7 @@ public class WebClientProvider {
 				.baseUrl(dataFetchBaseUrl)
 				.exchangeStrategies(exchangeStrategies);
 		if ("on".equals(logReactor)) {
-			webClientBuilder = webClientBuilder.filter(logRequestStart());
+			webClientBuilder = webClientBuilder.filter(logRequest());
 		}
 
 		webClient = webClientBuilder.build();
@@ -88,7 +88,7 @@ public class WebClientProvider {
 		return scheduler;
 	}
 	
-	private ExchangeFilterFunction logRequestStart() {
+	private ExchangeFilterFunction logRequest() {
         return (request, next) -> next.exchange(request)
         		.flatMap((Function<ClientResponse, Mono<ClientResponse>>) clientResponse -> {
         			LOG.debug(request.url());
