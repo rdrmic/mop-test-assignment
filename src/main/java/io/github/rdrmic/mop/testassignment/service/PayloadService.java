@@ -82,6 +82,7 @@ public class PayloadService {
 		}
 		return handle.then();
 	}
+
 	private Mono<Void> createExternDataHandle(int urlSufixNum, AtomicInteger repliesCounter) {
 		var handle = webClientProvider.getWebClient().get()
 				.uri(String.format("/%s%d", dataFetchUrlSufix, urlSufixNum))
@@ -124,7 +125,6 @@ public class PayloadService {
 			sendToDbHandles = sendToDbHandles.log("sendToDbHandles");
 		}
 		return sendToDbHandles.then();
-				
 	}
 	
 	private Flux<Void> sendPayloadToDb(List<ProductAndPriceDto> payload) {
